@@ -1,0 +1,208 @@
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        7-STAGE DEVOPS PIPELINE                              │
+│                   Task Manager CI/CD Implementation                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STAGE 1: Git / GitHub                                                        │
+│ Store source code                                                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ • GitHub repository with main branch                                         │
+│ • Version control and commit history                                        │
+│ • Branch protection rules                                                   │
+│ • Pull request workflow                                                     │
+│ OUTPUT: Source code checkout                                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STAGE 2: Jenkins                                                              │
+│ Automate workflow                                                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ • Pipeline initialization                                                   │
+│ • Build metadata tracking (number, timestamp)                                │
+│ • Workspace management                                                      │
+│ • Environment setup                                                          │
+│ OUTPUT: Pipeline execution context                                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STAGE 3: Maven Build                                                          │
+│ Compile & package                                                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ • Maven clean compile                                                        │
+│ • Dependency resolution                                                     │
+│ • Source code compilation                                                    │
+│ • JAR file packaging                                                         │
+│ OUTPUT: task-manager-1.0.0.jar                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STAGE 4: JUnit Tests                                                          │
+│ Verify functions                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ • Unit test execution (20+ tests)                                            │
+│ • Mock-based testing                                                         │
+│ • Test report generation                                                     │
+│ • Coverage analysis (JaCoCo)                                                 │
+│ OUTPUT: Test results, coverage report                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STAGE 5: SonarQube                                                            │
+│ Analyze code quality                                                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ • Static code analysis                                                       │
+│ • Bug detection                                                              │
+│ • Vulnerability scanning                                                     │
+│ • Code smell identification                                                 │
+│ • Quality gate enforcement                                                   │
+│ OUTPUT: Code quality report, coverage metrics                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STAGE 6: Docker                                                               │
+│ Containerize app                                                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ • Multi-stage Docker build                                                   │
+│ • Maven build stage                                                          │
+│ • JRE runtime stage                                                          │
+│ • Health check configuration                                                │
+│ • Image optimization                                                        │
+│ OUTPUT: Docker image (taskmanager-app:BUILD_NUMBER)                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ STAGE 7: Release                                                              │
+│ Distribute version                                                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ • Docker Hub authentication                                                  │
+│ • Image push to registry                                                     │
+│ • Version tagging (build number + latest)                                     │
+│ • Distribution for deployment                                                │
+│ OUTPUT: Image available in Docker Hub                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PIPELINE CHARACTERISTICS:
+
+✓ AUTOMATED: Fully automated from code to deployment
+✓ QUALITY-FOCUSED: Multiple validation stages
+✓ FAIL-SAFE: Stops on any stage failure
+✓ TRACEABLE: Full build history and versioning
+✓ SCALABLE: Container-based deployment
+✓ SECURE: Code quality and vulnerability scanning
+✓ CONSISTENT: Same environment across all stages
+
+QUALITY METRICS VALIDATED:
+
+• Code compiles without errors (Maven Build)
+• All tests pass (JUnit Tests)
+• Code coverage ≥ 80% (JaCoCo)
+• Zero critical bugs (SonarQube)
+• Zero vulnerabilities (SonarQube)
+• Image builds successfully (Docker)
+• Distribution completes (Release)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+APPLICATION STRUCTURE:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Task Manager Application (Spring Boot + Java 17)                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  REST API Layer                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐  │
+│  │ TaskController          HealthController                             │  │
+│  │ • CRUD operations       • Health check                               │  │
+│  │ • Filter by status      • Monitoring endpoint                        │  │
+│  │ • Filter by priority                                                 │  │
+│  └─────────────────────────────────────────────────────────────────────┘  │
+│                                   │                                         │
+│                                   ▼                                         │
+│  Service Layer                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────┐  │
+│  │ TaskService                                                             │  │
+│  │ • Business logic                                                       │  │
+│  │ • Validation                                                           │  │
+│  │ • Transaction management                                               │  │
+│  └─────────────────────────────────────────────────────────────────────┘  │
+│                                   │                                         │
+│                                   ▼                                         │
+│  Data Access Layer                                                           │
+│  ┌─────────────────────────────────────────────────────────────────────┐  │
+│  │ TaskRepository (Spring Data JPA)                                       │  │
+│  │ • CRUD operations                                                      │  │
+│  │ • Custom queries                                                       │  │
+│  │ • H2 Database (in-memory)                                              │  │
+│  └─────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TEST COVERAGE:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Test Suite                                                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  TaskServiceTest (11 tests)                                                 │
+│  ✓ getAllTasks()                                                            │
+│  ✓ getTaskById() - found / not found                                        │
+│  ✓ createTask()                                                            │
+│  ✓ updateTask() - found / not found                                        │
+│  ✓ deleteTask() - found / not found                                        │
+│  ✓ getTasksByStatus()                                                       │
+│  ✓ getTasksByPriority()                                                     │
+│                                                                             │
+│  TaskControllerTest (9 tests)                                               │
+│  ✓ getAllTasks()                                                            │
+│  ✓ getTaskById() - found / not found                                        │
+│  ✓ createTask()                                                            │
+│  ✓ updateTask() - found / not found                                        │
+│  ✓ deleteTask()                                                            │
+│  ✓ getTasksByStatus()                                                       │
+│  ✓ getTasksByPriority()                                                     │
+│                                                                             │
+│  TaskManagerApplicationTest (1 test)                                        │
+│  ✓ contextLoads()                                                           │
+│                                                                             │
+│  TOTAL: 21 tests                                                            │
+│  COVERAGE: > 80%                                                            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DEPLOYMENT OPTIONS:
+
+Option 1: Jenkins Pipeline (Primary)
+• Full 7-stage pipeline
+• Automated execution
+• Integrated with SonarQube
+• Docker Hub distribution
+
+Option 2: GitHub Actions (Alternative)
+• YAML-based workflow
+• Hosted runners
+• No Jenkins server needed
+• See SETUP_GUIDE.md for details
+
+Option 3: Manual Build
+• Local Maven build
+• Local Docker build
+• Manual push to registry
+• No automation
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PIPELINE NOTE: Each stage validates specific quality metrics.
+Failures halt progression to prevent faulty deployments.
