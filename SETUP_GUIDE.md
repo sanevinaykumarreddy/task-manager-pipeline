@@ -4,7 +4,7 @@ This guide provides step-by-step instructions to set up the complete 7-stage Dev
 
 ## Prerequisites Checklist
 
-- [ ] Java 17+ installed
+- [ ] Java 17+ installed (Note: Java 25 has compatibility issues with some testing tools - use Java 17-21 for full functionality)
 - [ ] Maven 3.8+ installed
 - [ ] Git installed
 - [ ] Docker installed and running
@@ -94,8 +94,8 @@ mvn clean install
 # Run tests
 mvn test
 
-# Generate coverage report
-mvn jacoco:report
+# Note: JaCoCo coverage is currently disabled due to Java compatibility issues
+# To enable coverage with Java 17-21, remove jacoco.skip from pom.xml
 
 # Run application locally
 mvn spring-boot:run
@@ -109,11 +109,13 @@ curl http://localhost:8081/health
 # Create a task
 curl -X POST http://localhost:8081/api/tasks \
   -H "Content-Type: application/json" \
-  -d '{"title":"Test Task","description":"Test Description","status":"PENDING","priority":"HIGH"}'
+  -d "{\"title\":\"Test Task\",\"description\":\"Test Description\",\"status\":\"PENDING\",\"priority\":\"HIGH\"}"
 
 # Get all tasks
 curl http://localhost:8081/api/tasks
 ```
+
+**Note:** The application runs on port 8081 (not 8080) to avoid port conflicts.
 
 ## Part 2: GitHub Setup
 
@@ -130,6 +132,13 @@ curl http://localhost:8081/api/tasks
 ```bash
 # Initialize git
 git init
+
+# Enable long paths for Windows (required for deep directory structures)
+git config --global core.longpaths true
+
+# Configure git identity (if not already configured)
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
 
 # Add files
 git add .
@@ -148,11 +157,19 @@ git push -u origin main
 ### 2.3 Configure GitHub Repository Settings
 
 1. Go to repository Settings
-2. Branches → Add rule
-   - Branch name pattern: `main`
-   - Require pull request reviews before merging
-   - Require status checks to pass before merging
-   - Require branches to be up to date before merging
+2. Navigate to Rulesets
+3. Click "Add branch ruleset"
+4. Configure:
+   - Ruleset Name: `main-branch-protection`
+   - Enforcement Status: Active
+   - Add target: Include by pattern → `main`
+   - Check "Require a pull request before merging"
+   - Set Required approvals to 1
+   - Check "Dismiss stale PR approvals when new commits are pushed"
+   - Check "Require status checks to pass before merging" (add "build" check when Jenkins is configured)
+   - Check "Require branches to be up to date before merging"
+   - Check "Block force pushes"
+5. Click "Create"
 
 ## Part 3: Docker Hub Setup
 
@@ -164,13 +181,17 @@ git push -u origin main
 
 ### 3.2 Create Access Token
 
-1. Login to Docker Hub
+1. Login to Docker Hub at https://hub.docker.com
 2. Click on your profile → Account Settings
-3. Security → New Access Token
-4. Description: `Jenkins CI/CD`
-5. Access permissions: Read, Write, Delete
-6. Generate and copy the token
-7. Save the token securely (you won't see it again)
+3. Click "Personal access tokens" in the left sidebar
+4. Click "Generate new token"
+5. Fill in:
+   - Description: `Jenkins CI/CD` or `Task Manager Pipeline`
+   - Access permissions: **Read & Write** (required for pushing images)
+   - Expiration: Choose appropriate duration (e.g., 90 days or 1 year)
+6. Click "Generate"
+7. **Copy the token immediately** - you won't be able to see it again!
+8. Save the token securely for Jenkins configuration
 
 ### 3.3 Update Jenkinsfile
 
@@ -187,12 +208,8 @@ DOCKER_IMAGE_NAME = 'YOUR_DOCKERHUB_USERNAME/taskmanager-app'
 # Pull SonarQube image
 docker pull sonarqube:lts-community
 
-# Run SonarQube
-docker run -d \
-  --name sonarqube \
-  -p 9000:9000 \
-  -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true \
-  sonarqube:lts-community
+# Run SonarQube (single line for Windows compatibility)
+docker run -d --name sonarqube -p 9000:9000 -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true sonarqube:lts-community
 ```
 
 ### 4.2 Access SonarQube
@@ -241,17 +258,12 @@ sudo systemctl enable jenkins
 
 **Docker:**
 ```bash
-docker run -d \
-  --name jenkins \
-  -p 8080:8080 \
-  -p 50000:50000 \
-  -v jenkins_home:/var/jenkins_home \
-  jenkins/jenkins:lts
+docker run -d --name jenkins -p 8081:8081 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
 ```
 
 ### 5.2 Access Jenkins
 
-1. Open browser: http://localhost:8080
+1. Open browser: http://localhost:8081
 2. Get initial password:
    ```bash
    # For Docker
@@ -380,14 +392,14 @@ docker run -d \
 # Pull from Docker Hub
 docker pull YOUR_USERNAME/taskmanager-app:latest
 
-# Run container
-docker run -d -p 8080:8080 --name task-manager YOUR_USERNAME/taskmanager-app:latest
+# Run container (using port 8081 to avoid conflicts)
+docker run -d -p 8081:8081 --name task-manager YOUR_USERNAME/taskmanager-app:latest
 
 # Check logs
 docker logs task-manager
 
 # Test health endpoint
-curl http://localhost:8080/health
+curl http://localhost:8081/health
 ```
 
 ### 6.3 Check SonarQube
@@ -437,6 +449,44 @@ mvn clean test
 - Version control Jenkinsfile changes
 
 ## Troubleshooting
+
+### Port 8080 Already in Use
+
+**Problem:** Web server failed to start. Port 8080 was already in use.
+**Solution:**
+- The application is configured to use port 8081 instead of 8080
+- Change `server.port` in `application.properties` if you need a different port
+- Kill the process using port 8080: `netstat -ano | findstr :8080` then `taskkill /PID <PID> /F`
+
+### Java 25 Compatibility Issues
+
+**Problem:** Mockito fails with "Java 25 is not supported by Byte Buddy"
+**Solution:**
+- Use Java 17, 18, 19, 20, or 21 for full functionality
+- Controller tests may be disabled on Java 25
+- Service layer tests work on Java 25
+
+### Lombok Not Working
+
+**Problem:** Compilation errors for missing getter/setter methods
+**Solution:**
+- Lombok has been removed from the project
+- Manual getter/setter methods are now in the Task.java file
+- This ensures compatibility across all Java versions
+
+### JaCoCo Coverage Reports Failing
+
+**Problem:** JaCoCo fails with "Unsupported class file major version"
+**Solution:**
+- JaCoCo is currently disabled in pom.xml (jacoco.skip=true)
+- To enable coverage with Java 17-21, update JaCoCo to version 0.8.12+ and remove jacoco.skip
+
+### Git Filename Too Long Error
+
+**Problem:** Git fails with "Filename too long" on Windows
+**Solution:**
+- Enable long paths in Git: `git config --global core.longpaths true`
+- This is required for deep directory structures on Windows
 
 ### Jenkins Build Fails at Maven Stage
 

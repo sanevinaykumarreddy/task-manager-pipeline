@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Docker Hub credentials (configure in Jenkins)
         DOCKER_HUB_CREDENTIALS = 'docker-hub-credentials'
-        DOCKER_IMAGE_NAME = 'taskmanager-app'
+        DOCKER_IMAGE_NAME = 'sanevinay9/taskmanager-app'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         SONARQUBE_SCANNER_HOME = tool 'SonarQubeScanner'
     }
@@ -47,8 +47,12 @@ pipeline {
                 echo '=========================================='
                 echo 'Stage 3: Maven Build - Compile & package'
                 echo '=========================================='
-                sh 'mvn clean compile'
-                sh 'mvn package -DskipTests'
+                script {
+                    docker.image('maven:3.9.5-eclipse-temurin-17').inside {
+                        sh 'mvn clean compile'
+                        sh 'mvn package -DskipTests'
+                    }
+                }
                 echo 'Maven build completed successfully'
             }
         }
@@ -59,7 +63,11 @@ pipeline {
                 echo '=========================================='
                 echo 'Stage 4: JUnit Tests - Verify functions'
                 echo '=========================================='
-                sh 'mvn test'
+                script {
+                    docker.image('maven:3.9.5-eclipse-temurin-17').inside {
+                        sh 'mvn test'
+                    }
+                }
                 junit 'target/surefire-reports/*.xml'
                 echo 'JUnit tests passed'
             }
@@ -71,15 +79,19 @@ pipeline {
                 echo '=========================================='
                 echo 'Stage 5: SonarQube - Analyze code quality'
                 echo '=========================================='
-                withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar ' +
-                       '-Dsonar.projectKey=task-manager ' +
-                       '-Dsonar.projectName=Task-Manager ' +
-                       '-Dsonar.sources=src/main/java ' +
-                       '-Dsonar.tests=src/test/java ' +
-                       '-Dsonar.java.binaries=target/classes ' +
-                       '-Dsonar.junit.reportPaths=target/surefire-reports ' +
-                       '-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
+                script {
+                    docker.image('maven:3.9.5-eclipse-temurin-17').inside {
+                        withSonarQubeEnv('SonarQube') {
+                            sh 'mvn sonar:sonar ' +
+                               '-Dsonar.projectKey=task-manager ' +
+                               '-Dsonar.projectName=Task-Manager ' +
+                               '-Dsonar.sources=src/main/java ' +
+                               '-Dsonar.tests=src/test/java ' +
+                               '-Dsonar.java.binaries=target/classes ' +
+                               '-Dsonar.junit.reportPaths=target/surefire-reports ' +
+                               '-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml'
+                        }
+                    }
                 }
             }
         }
