@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven'
+    }
+
     environment {
         // Docker Hub credentials (configure in Jenkins)
         DOCKER_HUB_CREDENTIALS = 'docker-hub-credentials'
@@ -19,7 +23,7 @@ pipeline {
                 checkout scm
                 script {
                     env.GIT_COMMIT = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                    env.GIT_SHORT_COMMIT = sh(script: 'git log -1 --pretty=format:"%h"', returnStdout: true).trim()
+                    env.GIT_SHORT_COMMIT = sh(script: 'git log -1 --pretty=%h', returnStdout: true).trim()
                 }
                 echo "Git commit: ${env.GIT_COMMIT}"
                 echo "Git short commit: ${env.GIT_SHORT_COMMIT}"
@@ -42,13 +46,15 @@ pipeline {
         }
 
         // Stage 3: Maven Build - Compile & package
+        // Run Maven on the Jenkins agent (do not use docker.image().inside).
+        // Jenkins-in-Docker typically has no docker CLI, so docker pull fails with "docker: not found".
         stage('Maven Build') {
             steps {
                 echo '=========================================='
                 echo 'Stage 3: Maven Build - Compile & package'
                 echo '=========================================='
-                sh 'mvn clean compile'
-                sh 'mvn package -DskipTests'
+                sh 'mvn -B clean compile'
+                sh 'mvn -B package -DskipTests'
                 echo 'Maven build completed successfully'
             }
         }
@@ -59,7 +65,7 @@ pipeline {
                 echo '=========================================='
                 echo 'Stage 4: JUnit Tests - Verify functions'
                 echo '=========================================='
-                sh 'mvn test'
+                sh 'mvn -B test'
                 junit 'target/surefire-reports/*.xml'
                 echo 'JUnit tests passed'
             }
@@ -72,7 +78,7 @@ pipeline {
                 echo 'Stage 5: SonarQube - Analyze code quality'
                 echo '=========================================='
                 withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar ' +
+                    sh 'mvn -B sonar:sonar ' +
                        '-Dsonar.projectKey=task-manager ' +
                        '-Dsonar.projectName=Task-Manager ' +
                        '-Dsonar.sources=src/main/java ' +
