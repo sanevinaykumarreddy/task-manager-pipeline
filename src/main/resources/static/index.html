@@ -412,6 +412,8 @@
                 priority: document.getElementById('editPriority').value
             };
 
+            console.log('Updating task:', taskId, task);
+
             try {
                 const response = await fetch(`${API_BASE}/${taskId}`, {
                     method: 'PUT',
@@ -419,13 +421,18 @@
                     body: JSON.stringify(task)
                 });
 
+                console.log('Response status:', response.status);
+
                 if (response.ok) {
                     closeEditModal();
                     loadTasks();
                 } else {
-                    alert('Failed to update task');
+                    const errorText = await response.text();
+                    console.error('Update failed:', errorText);
+                    alert('Failed to update task: ' + errorText);
                 }
             } catch (error) {
+                console.error('Error updating task:', error);
                 alert('Error updating task: ' + error.message);
             }
         });
