@@ -77,9 +77,10 @@ pipeline {
                 echo '=========================================='
                 echo 'Stage 5: SonarQube - Analyze code quality'
                 echo '=========================================='
-                withSonarQubeEnv('SonarQube') {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
                     sh 'mvn -B sonar:sonar ' +
                        '-Dsonar.host.url=http://172.17.0.3:9000 ' +
+                       '-Dsonar.login=$SONAR_TOKEN ' +
                        '-Dsonar.projectKey=task-manager ' +
                        '-Dsonar.projectName=Task-Manager ' +
                        '-Dsonar.sources=src/main/java ' +
