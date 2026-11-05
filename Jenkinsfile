@@ -79,7 +79,7 @@ pipeline {
                 echo '=========================================='
                 withSonarQubeEnv('SonarQube') {
                     sh 'mvn -B sonar:sonar ' +
-                       '-Dsonar.host.url=http://sonarqube:9000 ' +
+                       '-Dsonar.host.url=http://172.17.0.3:9000 ' +
                        '-Dsonar.projectKey=task-manager ' +
                        '-Dsonar.projectName=Task-Manager ' +
                        '-Dsonar.sources=src/main/java ' +
