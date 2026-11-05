@@ -97,8 +97,15 @@ pipeline {
                 echo 'Stage 6: Docker - Containerize app'
                 echo '=========================================='
                 script {
-                    docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_TAG}")
-                    echo "Docker image built: ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
+                    // Check if Docker is available in the Jenkins container
+                    def dockerAvailable = sh(script: 'docker --version', returnStatus: true) == 0
+                    if (dockerAvailable) {
+                        docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_TAG}")
+                        echo "Docker image built: ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
+                    } else {
+                        echo 'Docker not available in Jenkins container. Skipping Docker build.'
+                        echo 'To enable Docker builds, mount Docker socket to Jenkins container.'
+                    }
                 }
             }
         }
