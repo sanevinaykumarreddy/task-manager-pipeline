@@ -119,11 +119,18 @@ pipeline {
                 echo 'Stage 7: Release - Distribute version'
                 echo '=========================================='
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', DOCKER_HUB_CREDENTIALS) {
-                        docker.image("${DOCKER_IMAGE_NAME}:${DOCKER_TAG}").push()
-                        docker.image("${DOCKER_IMAGE_NAME}:${DOCKER_TAG}").push('latest')
+                    // Check if Docker is available in the Jenkins container
+                    def dockerAvailable = sh(script: 'docker --version', returnStatus: true) == 0
+                    if (dockerAvailable) {
+                        docker.withRegistry('https://registry.hub.docker.com', DOCKER_HUB_CREDENTIALS) {
+                            docker.image("${DOCKER_IMAGE_NAME}:${DOCKER_TAG}").push()
+                            docker.image("${DOCKER_IMAGE_NAME}:${DOCKER_TAG}").push('latest')
+                        }
+                        echo "Docker image pushed to registry: ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
+                    } else {
+                        echo 'Docker not available in Jenkins container. Skipping Docker push.'
+                        echo 'To enable Docker pushes, mount Docker socket to Jenkins container.'
                     }
-                    echo "Docker image pushed to registry: ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
                 }
             }
         }
