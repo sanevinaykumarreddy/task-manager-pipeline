@@ -81,7 +81,7 @@ pipeline {
                     sh 'mvn -B sonar:sonar ' +
                        '-Dsonar.host.url=http://172.17.0.3:9000 ' +
                        '-Dsonar.login=$SONAR_TOKEN ' +
-                       '-Dsonar.projectKey=task-manager ' +
+                       '-Dsonar.projectKey=task-Manager ' +
                        '-Dsonar.projectName=Task-Manager ' +
                        '-Dsonar.sources=src/main/java ' +
                        '-Dsonar.tests=src/test/java ' +
